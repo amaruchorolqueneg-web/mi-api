@@ -1,21 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
-from typing import Optional
 from sqlalchemy.orm import Session
 from app.database.database import SessionLocal
-from app.models.tarea import Tarea 
-
+from app.models.tarea import Tarea
+from app.schemas.tarea import TareaSchema
 
 router = APIRouter()
-
-
-class TareaSchema(BaseModel):
-    titulo: str
-    description: Optional[str] = None
-    completada: bool = False
-
-    class Config:
-        from_attributes = True
 
 
 
