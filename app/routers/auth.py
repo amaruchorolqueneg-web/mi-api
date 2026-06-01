@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.database.database import SessionLocal
 from app.models.usuario import Usuario
@@ -31,12 +32,11 @@ def register(usuario: UsuarioSchema, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=TokenSchema)
-def login(usuario: UsuarioSchema, db: Session = Depends(get_db)):
-    usuario_db = db.query(Usuario).filter(Usuario.email == usuario.email).first()
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    usuario_db = db.query(Usuario).filter(Usuario.email == form_data.username).first()
     if not usuario_db:
-        raise HTTPException(status_code=400, detail="Email o password incorrectos")
-    if not verificar_password(usuario.password, usuario_db.password):
-        raise HTTPException(status_code=400, detail="Email o password incorrectos")
-    token = crear_token({"sub": usuario.email})
+        raise HTTPException(status_code=401, detail="Email o password incorrectos")
+    if not verificar_password(form_data.password, usuario_db.password):
+        raise HTTPException(status_code=401, detail="Email o password incorrectos")
+    token = crear_token({"sub": form_data.username})
     return {"access_token": token, "token_type": "bearer"}
-

@@ -1,12 +1,15 @@
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
 
 
 SECRET_KEY = "mi_clave_secreta_123"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", truncate_error=False)
 
@@ -31,4 +34,10 @@ def verificar_token(token: str):
         return email
     except JWTError:
         return None
+    
+
+def get_usuario_actual(token: str = Depends(oauth2_scheme)):
+    email = verificar_token(token)
+    if email is None:
+        raise HTTPException(status_code=401, detail="token invalido o expirado")
     
